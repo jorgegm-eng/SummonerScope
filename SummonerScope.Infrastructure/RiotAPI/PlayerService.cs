@@ -54,4 +54,47 @@ public class PlayerService : IPlayerService
             MatchIds = matchIds
         };
     }
+
+    public async Task<MatchAnalysisDto?> GetMatchAnalysisAsync(string matchId, string puuid)
+    {
+        var match = await _riotApiClient.GetMatchAsync(matchId);
+
+        if (match is null)
+        {
+            return null;
+        }
+
+        var participant = match.Info.Participants.FirstOrDefault(p => p.Puuid == puuid);
+
+        if (participant is null)
+        {
+            return null;
+        }
+
+        var durationSeconds = match.Info.GameDuration;
+        var durationMinutes = durationSeconds / 60.0;
+
+        var kda = participant.Deaths == 0
+            ? participant.Kills + participant.Assists
+            : (double)(participant.Kills + participant.Assists) / participant.Deaths;
+
+        return new MatchAnalysisDto
+        {
+            MatchId = match.Metadata.MatchId,
+            Puuid = participant.Puuid,
+            Champion = participant.ChampionName,
+            Kills = participant.Kills,
+            Deaths = participant.Deaths,
+            Assists = participant.Assists,
+            Kda = Math.Round(kda, 2),
+            Win = participant.Win,
+            Gold = participant.GoldEarned,
+            GoldPerMinute = durationMinutes > 0 ? Math.Round(participant.GoldEarned / durationMinutes, 2) : 0,
+            Damage = participant.Damage,
+            DamagePerMinute = durationMinutes > 0 ? Math.Round(participant.Damage / durationMinutes, 2) : 0,
+            Cs = participant.Cs,
+            CsPerMinute = durationMinutes > 0 ? Math.Round(participant.Cs / durationMinutes, 2) : 0,
+            DurationSeconds = durationSeconds
+        };
+    }
 }
