@@ -92,8 +92,8 @@ public class PlayerService : IPlayerService
             GoldPerMinute = durationMinutes > 0 ? Math.Round(participant.GoldEarned / durationMinutes, 2) : 0,
             Damage = participant.Damage,
             DamagePerMinute = durationMinutes > 0 ? Math.Round(participant.Damage / durationMinutes, 2) : 0,
-            Cs = participant.Cs,
-            CsPerMinute = durationMinutes > 0 ? Math.Round(participant.Cs / durationMinutes, 2) : 0,
+            Cs = participant.Cs + participant.JungleMinions,
+            CsPerMinute = durationMinutes > 0 ? Math.Round((participant.Cs + participant.JungleMinions) / durationMinutes, 2) : 0,
             DurationSeconds = durationSeconds
         };
     }

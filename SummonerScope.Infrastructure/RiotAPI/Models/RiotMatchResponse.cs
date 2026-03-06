@@ -57,4 +57,7 @@ public class Participant
 
     [JsonPropertyName("totalMinionsKilled")]
     public int Cs { get; set; }
+
+    [JsonPropertyName("neutralMinionsKilled")]
+    public int JungleMinions { get; set; }
 }
