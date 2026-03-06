@@ -54,4 +54,19 @@ public class RiotApiClient : IRiotApiClient
 
         return await response.Content.ReadFromJsonAsync<List<string>>();
     }
+
+    public async Task<RiotMatchResponse?> GetMatchAsync(string matchId)
+    {
+        var url = $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("X-Riot-Token", _settings.ApiKey);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        return await response.Content.ReadFromJsonAsync<RiotMatchResponse>();
+    }
 }
