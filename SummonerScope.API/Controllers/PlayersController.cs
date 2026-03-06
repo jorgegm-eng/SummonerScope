@@ -39,4 +39,17 @@ public class PlayersController : ControllerBase
 
         return Ok(matches);
     }
+
+    [HttpGet("{region}/{gameName}/{tagLine}/matches/analysis")]
+public async Task<IActionResult> GetPlayerMatchAnalysis(string region, string gameName, string tagLine, [FromQuery] int count = 10)
+    {
+        var analysis = await _playerService.GetPlayerMatchAnalysisAsync(region, gameName, tagLine, count);
+
+        if (analysis is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(analysis);
+    }
 }
