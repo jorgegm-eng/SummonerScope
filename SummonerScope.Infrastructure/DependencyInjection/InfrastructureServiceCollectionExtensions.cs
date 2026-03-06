@@ -13,6 +13,8 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddHttpClient<IRiotApiClient, RiotApiClient>();
 
+        services.AddScoped<IMatchAnalyzer, MatchAnalyzer>();
+
         services.AddScoped<IPlayerService, PlayerService>();
 
         return services;
