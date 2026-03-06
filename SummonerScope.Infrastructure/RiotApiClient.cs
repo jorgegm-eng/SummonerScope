@@ -74,6 +74,13 @@ public class RiotApiClient : IRiotApiClient
 
     public async Task<RiotMatchResponse?> GetMatchAsync(string matchId)
     {
+        var cacheKey = $"riot-match:{matchId}".ToLowerInvariant();
+
+        if (_cache.TryGetValue(cacheKey, out RiotMatchResponse? cachedMatch))
+        {
+            return cachedMatch;
+        }
+
         var url = $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}";
 
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -81,9 +88,20 @@ public class RiotApiClient : IRiotApiClient
 
         var response = await _httpClient.SendAsync(request);
 
-        if (!response.IsSuccessStatusCode)
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
             return null;
+        }
 
-        return await response.Content.ReadFromJsonAsync<RiotMatchResponse>();
+        response.EnsureSuccessStatusCode();
+
+        var match = await response.Content.ReadFromJsonAsync<RiotMatchResponse>();
+
+        if (match is not null)
+        {
+            _cache.Set(cacheKey, match, TimeSpan.FromMinutes(15));
+        }
+
+        return match;
     }
 }
