@@ -56,7 +56,7 @@ public class Participant
     public int Damage { get; set; }
 
     [JsonPropertyName("totalMinionsKilled")]
-    public int Cs { get; set; }
+    public int LaneMinions { get; set; }
 
     [JsonPropertyName("neutralMinionsKilled")]
     public int JungleMinions { get; set; }
