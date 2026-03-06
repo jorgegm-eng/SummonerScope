@@ -1,0 +1,20 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using SummonerScope.Application.Interfaces;
+using SummonerScope.Infrastructure.RiotAPI;
+
+namespace SummonerScope.Infrastructure.DependencyInjection;
+
+public static class InfrastructureServiceCollectionExtensions
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<RiotApiSettings>(configuration.GetSection(RiotApiSettings.SectionName));
+
+        services.AddHttpClient<IRiotApiClient, RiotApiClient>();
+
+        services.AddScoped<IPlayerService, PlayerService>();
+
+        return services;
+    }
+}

@@ -1,0 +1,57 @@
+using System.Net.Http.Json;
+using Microsoft.Extensions.Options;
+using SummonerScope.Infrastructure.RiotAPI.Models;
+
+namespace SummonerScope.Infrastructure.RiotAPI;
+
+public class RiotApiClient : IRiotApiClient
+{
+    private readonly HttpClient _httpClient;
+    private readonly RiotApiSettings _settings;
+
+    public RiotApiClient(HttpClient httpClient, IOptions<RiotApiSettings> options)
+    {
+        _httpClient = httpClient;
+        _settings = options.Value;
+    }
+
+    public async Task<RiotAccountResponse?> GetAccountByRiotIdAsync(string gameName, string tagLine)
+    {
+        var url =
+            $"{_settings.AccountBaseUrl}/riot/account/v1/accounts/by-riot-id/{Uri.EscapeDataString(gameName)}/{Uri.EscapeDataString(tagLine)}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("X-Riot-Token", _settings.ApiKey);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<RiotAccountResponse>();
+    }
+
+    public async Task<List<string>?> GetMatchIdsByPuuidAsync(string puuid, int count = 10)
+    {
+        var url =
+            $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{Uri.EscapeDataString(puuid)}/ids?start=0&count={count}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("X-Riot-Token", _settings.ApiKey);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<List<string>>();
+    }
+}

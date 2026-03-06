@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SummonerScope.API/SummonerScope.API.csproj" />
+  <Project Path="SummonerScope.Application/SummonerScope.Application.csproj" />
+  <Project Path="SummonerScope.Domain/SummonerScope.Domain.csproj" />
+  <Project Path="SummonerScope.Infrastructure/SummonerScope.Infrastructure.csproj" />
+</Solution>
