@@ -15,6 +15,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddHttpClient<IRiotApiClient, RiotApiClient>();
 
         services.AddScoped<ICacheService, MemoryCacheService>();
+
+        services.AddScoped<ICacheService, RedisCacheService>();
         
         services.AddScoped<IMatchAnalyzer, MatchAnalyzer>();
 
