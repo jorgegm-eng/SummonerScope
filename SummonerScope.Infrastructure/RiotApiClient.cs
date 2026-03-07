@@ -56,8 +56,17 @@ public class RiotApiClient : IRiotApiClient
 
     public async Task<List<string>?> GetMatchIdsByPuuidAsync(string puuid, int count = 10)
     {
+        var cacheKey = $"riot-match-ids:{puuid}:{count}".ToLowerInvariant();
+
+        var cachedMatchIds = await _cacheService.GetAsync<List<string>>(cacheKey);
+
+        if (cachedMatchIds is not null)
+        {
+            return cachedMatchIds;
+        }
+
         var url =
-            $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{Uri.EscapeDataString(puuid)}/ids?start=0&count={count}";
+        $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{Uri.EscapeDataString(puuid)}/ids?start=0&count={count}";
 
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Add("X-Riot-Token", _settings.ApiKey);
@@ -71,7 +80,14 @@ public class RiotApiClient : IRiotApiClient
 
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<List<string>>();
+        var matchIds = await response.Content.ReadFromJsonAsync<List<string>>();
+
+        if (matchIds is not null)
+        {
+            await _cacheService.SetAsync(cacheKey, matchIds, TimeSpan.FromMinutes(10));
+        }
+
+        return matchIds;
     }
 
     public async Task<RiotMatchResponse?> GetMatchAsync(string matchId)
