@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using SummonerScope.Application.Interfaces;
 using SummonerScope.Infrastructure.RiotAPI.Models;
 
 namespace SummonerScope.Infrastructure.RiotAPI;
@@ -9,20 +9,22 @@ public class RiotApiClient : IRiotApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly RiotApiSettings _settings;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cacheService;
 
-    public RiotApiClient(HttpClient httpClient, IOptions<RiotApiSettings> options, IMemoryCache cache)
+    public RiotApiClient(HttpClient httpClient, IOptions<RiotApiSettings> options, ICacheService cacheService)
     {
         _httpClient = httpClient;
         _settings = options.Value;
-        _cache = cache;
+        _cacheService = cacheService;
     }
 
     public async Task<RiotAccountResponse?> GetAccountByRiotIdAsync(string gameName, string tagLine)
     {
         var cacheKey = $"riot-account:{gameName}:{tagLine}".ToLowerInvariant();
 
-        if (_cache.TryGetValue(cacheKey, out RiotAccountResponse? cachedAccount))
+        var cachedAccount = await _cacheService.GetAsync<RiotAccountResponse>(cacheKey);
+
+        if (cachedAccount is not null)
         {
             return cachedAccount;
         }
@@ -46,7 +48,7 @@ public class RiotApiClient : IRiotApiClient
 
         if (account is not null)
         {
-            _cache.Set(cacheKey, account, TimeSpan.FromMinutes(30));
+            await _cacheService.SetAsync(cacheKey, account, TimeSpan.FromMinutes(30));
         }
 
         return account;
@@ -76,7 +78,9 @@ public class RiotApiClient : IRiotApiClient
     {
         var cacheKey = $"riot-match:{matchId}".ToLowerInvariant();
 
-        if (_cache.TryGetValue(cacheKey, out RiotMatchResponse? cachedMatch))
+        var cachedMatch = await _cacheService.GetAsync<RiotMatchResponse>(cacheKey);
+
+        if (cachedMatch is not null)
         {
             return cachedMatch;
         }
@@ -99,7 +103,7 @@ public class RiotApiClient : IRiotApiClient
 
         if (match is not null)
         {
-            _cache.Set(cacheKey, match, TimeSpan.FromMinutes(15));
+            await _cacheService.SetAsync(cacheKey, match, TimeSpan.FromMinutes(15));
         }
 
         return match;
